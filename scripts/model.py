@@ -119,7 +119,8 @@ def load_cpp_trace(path, from_check):
 
 def main():
     if len(sys.argv) != 3:
-        print(__doc__)
+        sys.stderr.write(
+            "usage: model.py <trace.csv | -> <config json>\n")
         return 2
     trace_arg, cfg = sys.argv[1], json.loads(sys.argv[2])
 
@@ -135,10 +136,11 @@ def main():
             str(cfg["queue_min_ns"]), str(cfg["queue_max_ns"]),
             lo_hi("image_cold"), lo_hi("image_warm"), lo_hi("create"),
             lo_hi("boot"), lo_hi("init"), lo_hi("network")])
-        proc = subprocess.run([sys.argv[0].rsplit("/", 2)[0] + "/../build/check"]
-                              if False else ["./build/check"],
-                              input=line + "\n", capture_output=True,
-                              text=True)
+        import os
+        check_bin = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 "..", "build", "check")
+        proc = subprocess.run([check_bin], input=line + "\n",
+                              capture_output=True, text=True)
         if proc.returncode != 0:
             print("check driver failed:", proc.stderr)
             return 1
